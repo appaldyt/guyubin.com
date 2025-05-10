@@ -35,3 +35,5 @@ Build for production
 ```bash
 npm run build
 ```
+
+https://www.dbdiagram.io/d/guyubin-com-681f13065b2fc4582f0039ee
