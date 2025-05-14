@@ -1,5 +1,5 @@
-import { Prisma } from "@prisma/client";
 import type { Request, Response, NextFunction } from "express";
+import { Prisma } from "../generated/prisma";
 
 export default function errorHandler(
     error: Error,
