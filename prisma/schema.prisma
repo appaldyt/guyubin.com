@@ -28,6 +28,8 @@ model Role {
 
   users User[]
 
+  room_member_roles RoomMember[]
+
   @@map("roles")
 }
 
@@ -44,7 +46,15 @@ model User {
 
   rooms Room[] @relation("UserCreateRelation")
 
-  @@map("user")
+  room_members RoomMember[]
+  room_messages RoomMessage[]
+  password_reset PasswordReset[]
+  ower_transactions Transaction[] @relation("TransactionOwnerRelation")
+  member_transactions Transaction[] @relation("TransactionMemberRelation")
+  payouts Payout[]
+
+
+  @@map("users")
 }
 
 enum GroupType {
@@ -64,6 +74,7 @@ model Group {
   created_at DateTime @default(now())
 
   assets GroupAsset[]
+  transactions Transaction[]
 
   @@map("groups")
 }
@@ -91,9 +102,111 @@ model Room {
 
   created_at DateTime @default(now())
 
+  members RoomMember[]
+  messages RoomMessage[]
+
   @@map("rooms")
 }
 
 model RoomMember {
   id String @id @default(uuid()) @db.Char(36)
+
+  room_id String
+  room Room @relation(fields: [room_id], references: [id])
+
+  user_id String
+  user User @relation(fields: [user_id], references: [id])
+
+  role_id String
+  role Role @relation(fields: [role_id], references: [id])
+
+  joined_at DateTime @default(now())
+
+  @@map("room_members")
+}
+
+enum MassageType {
+  TEXT
+  IMAGE
+}
+
+model RoomMessage {
+  id String @id @default(uuid()) @db.Char(36)
+
+  room_id String
+  room Room @relation(fields: [room_id], references: [id])
+
+  sender_id String
+  user User @relation(fields: [sender_id], references: [id])
+
+  content String @db.Text
+
+  type MassageType? @default(TEXT)
+
+  created_at DateTime @default(now())
+
+  @@map("room_messages")
+}
+
+model PasswordReset {
+  id String @id @default(uuid()) @db.Char(36)
+
+  user_id String
+  user User @relation(fields: [user_id], references: [id])
+
+  token String
+
+  @@map("user_password_resets")
+}
+
+enum TransactionType {
+  PENDING
+  SUCCESS
+  FAILED
+}
+
+model Transaction {
+  id String @id @default(uuid()) @db.Char(36)
+
+  owner_id String
+  owner User @relation("TransactionOwnerRelation",fields: [owner_id], references: [id])
+
+  user_id String
+  user User @relation("TransactionMemberRelation",fields: [user_id], references: [id])
+
+  group_id String
+  group Group @relation(fields: [group_id], references: [id])
+  
+  price Int
+
+  type TransactionType? @default(PENDING)
+
+  created_at DateTime @default(now())
+
+  @@map("transactions")
+  
+}
+
+model Payout {
+  id String @id @default(uuid()) @db.Char(36)
+  
+  user_id String
+  user User @relation(fields: [user_id], references: [id])
+
+  amount Int
+
+  bank_name String
+
+  bank_account_number String
+
+  bank_account_name String
+
+  status TransactionType? @default(PENDING)
+
+  proof String? @db.Text
+
+  created_at DateTime @default(now())
+
+  @@map("payouts")
+
 }
