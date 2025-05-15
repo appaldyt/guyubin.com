@@ -1,6 +1,7 @@
 import { RoleType } from "../generated/prisma"
 import prisma from "../utils/prisma"
 import { SignupValues } from "../utils/schema/user"
+import crypto from "node:crypto"
 
 export const isEmailExist = async (email: string) => {
     return await prisma.user.count({
@@ -38,4 +39,16 @@ export const findUserByEmail = async (email: string) => {
             email: email
         }
      })
+}
+
+export const createPasswordReset = async (email: string) => {
+    const user = await findUserByEmail(email)
+    const token = crypto.randomBytes(32).toString("hex")
+
+    return await prisma.passwordReset.create({
+        data: {
+            user_id: user.id,
+            token
+        }
+    })
 }
